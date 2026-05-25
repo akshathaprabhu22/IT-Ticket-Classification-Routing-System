@@ -1,109 +1,139 @@
-# IT Ticket Classification & Routing System
+# 🎫 IT Ticket Classification & Routing System
+### Claude API · Retrieval-Augmented Generation (RAG) · Semantic Classification
 
-**Portfolio Project | End-to-End LLM Engineering with RAG**
+---
 
-## Overview
+## 👋 Why I Built This
 
-This project builds an intelligent IT helpdesk ticket routing system using the **Claude API** and **Retrieval-Augmented Generation (RAG)**. Given a raw support ticket, the system automatically classifies it, assigns a priority level, and routes it to the appropriate owner — reducing manual triage time by up to **80%**.
+I'm a Product Manager exploring a question I care deeply about:
 
-## Problem Statement
+> **Which problems actually need AI — and which ones just think they do?**
 
-IT support teams receive thousands of tickets daily. Manual triage is slow, inconsistent, and costly. This project automates that process using state-of-the-art LLM reasoning combined with semantic retrieval, achieving more accurate and context-aware routing than traditional ML classifiers.
+It's easy to reach for AI as a default. The harder skill is knowing when it genuinely adds value over a simpler solution, and being able to articulate *why* to engineers, stakeholders, and customers.
 
-## Architecture
+This project is my hands-on answer to that question. I built an end-to-end AI system from scratch — not to prove I can write code, but to deeply understand the tradeoffs that come up when scoping, building, and evaluating AI features as a PM.
+
+---
+
+## 🤔 Does This Problem Actually Need AI?
+
+This was my first question before writing a single line. Here's the honest analysis:
+
+| Approach | What it can do | Where it breaks down |
+|----------|---------------|----------------------|
+| **Rule-based routing** (keyword matching) | Fast, cheap, fully auditable | Fails on novel phrasing, slang, ambiguous tickets |
+| **Traditional ML** (Decision Tree, SVM) | Good on common categories, no API cost | Brittle on rare categories, no reasoning, no explanation |
+| **LLM only** (no retrieval) | Handles novel language well | Can hallucinate categories not in your system |
+| **LLM + RAG** ✅ | Grounds decisions in real historical data, explains reasoning | Adds latency and API cost |
+
+**Verdict: AI is genuinely warranted here.** IT tickets are written in natural language, cover edge cases rule-based systems can't anticipate, and incorrect routing has real operational cost. The reasoning and explanation capability of LLMs also matters for trust and compliance — something a decision tree simply can't provide.
+
+---
+
+## 🎯 The Problem
+
+IT support teams at mid-to-large companies receive **thousands of tickets daily**. Manual triage is:
+- **Slow** — experienced agents spend time on sorting, not solving
+- **Inconsistent** — the same ticket gets routed differently depending on who reads it
+- **Costly** — misrouted tickets get bounced between teams, extending resolution time
+
+This system automates triage: given a raw support ticket, it predicts the correct **category**, **priority level**, and **responsible owner** — with a plain-English explanation of *why*.
+
+> 📉 Estimated impact: reduce manual triage time by ~80%, cut misrouting by grounding decisions in historical data.
+
+---
+
+## 🏗️ Architecture
 
 ```
-Raw Ticket Input
-      │
-      ▼
-┌─────────────┐     ┌──────────────────────┐
-│  Embedding  │────▶│  RAG Vector Index    │
-│  (Claude)   │     │  (27.6k tickets)     │
-└─────────────┘     └──────────┬───────────┘
-                               │ Top-K Similar Tickets
-                               ▼
-                    ┌──────────────────────┐
-                    │  Claude Routing LLM  │
-                    │  (with RAG context)  │
-                    └──────────┬───────────┘
-                               │
-                    ┌──────────▼───────────┐
-                    │  Category + Priority │
-                    │  + Owner Assignment  │
-                    └──────────────────────┘
+New IT Ticket (free text)
+        │
+        ▼
+┌───────────────────┐     ┌──────────────────────────────┐
+│  Vectorize text   │────▶│   RAG Index                  │
+│  (TF-IDF / BM25)  │     │   (indexed historical tickets)│
+└───────────────────┘     └──────────────┬───────────────┘
+                                         │  Top-K most similar tickets
+                                         ▼
+                           ┌──────────────────────────┐
+                           │   Claude API             │
+                           │   ticket + RAG context   │
+                           └─────────────┬────────────┘
+                                         │
+                    ┌────────────────────▼──────────────────────┐
+                    │  category · priority · owner · confidence  │
+                    │  + plain-English reasoning                 │
+                    └────────────────────────────────────────────┘
 ```
 
-## Pipeline Steps
+---
 
-| Step | Description |
-|------|-------------|
-| 1. Load & Clean | Load 27,600 synthetic IT tickets from HuggingFace; handle missing categories |
-| 2. Embed | Generate semantic embeddings using Claude API |
-| 3. Index | Build vector similarity index for fast retrieval |
-| 4. Route | Claude reads ticket + retrieved context → assigns category, priority, owner |
-| 5. Compare | Benchmark Claude RAG vs. decision tree baseline vs. LLM-only (no retrieval) |
+## 📋 What the Notebook Covers
 
-## Key Features
+| Step | What happens | PM takeaway |
+|------|-------------|-------------|
+| **1. Load & Clean** | 27,600 synthetic IT tickets from HuggingFace | Data quality is a product decision — dropping vs. imputing missing labels changes model behaviour |
+| **2. Embed** | Claude generates semantic ticket signatures | Embeddings capture meaning, not just keywords — critical for handling natural language variation |
+| **3. Index** | Build TF-IDF / BM25 retrieval index | Retrieval quality directly caps routing accuracy — this is where most production systems underinvest |
+| **4. Route** | Claude + RAG context → category, priority, owner | Confidence scores let you decide when to escalate to a human — key for trust and liability |
+| **5. Compare** | RAG vs. LLM-only vs. Decision Tree | Benchmarking is how you justify the added cost and complexity of AI to stakeholders |
+| **6. Optimize** | Batch API, sub-agents, caching | Token costs at scale are a real product concern — AI features need a cost model, not just an accuracy metric |
+| **7. Evaluate** | Accuracy, resolution time, escalation rate | Defining the right success metric is the PM's job — accuracy alone is rarely the full picture |
 
-- **Claude API integration** — uses Claude for both embedding and classification (not OpenAI)
-- **RAG-powered routing** — retrieves similar historical tickets as context for better decisions
-- **Batch embedding** — minimizes token usage and API cost at scale
-- **Multi-output prediction** — simultaneously predicts category, priority, and responsible owner
-- **Model comparison** — benchmarks RAG approach against traditional ML and LLM-only baselines
+---
 
-## Dataset
+## 💡 Key PM Learnings
 
-- **Source**: [`KameronB/synthetic-it-callcenter-tickets`](https://huggingface.co/datasets/KameronB/synthetic-it-callcenter-tickets) on HuggingFace
-- **Size**: 27,600 synthetic IT support tickets
-- **Fields**: ticket description, category, priority, resolution owner
+**1. RAG vs. fine-tuning is a product decision, not just a technical one.**
+RAG is cheaper to update (add new tickets to the index), easier to audit (you can inspect what was retrieved), and doesn't require retraining when your ticket taxonomy changes. Fine-tuning is better for well-defined, stable domains. For an IT helpdesk — where ticket types evolve constantly — RAG wins.
 
-## Technologies Used
+**2. Confidence scores are a feature, not an afterthought.**
+The routing model returns a confidence score with every prediction. Tickets below 70% confidence get flagged for human review. This is how you build a system that scales *without* sacrificing accuracy — a core PM tradeoff between automation and oversight.
 
-| Category | Tools |
-|----------|-------|
+**3. The baseline matters.**
+A decision tree on the same data achieves strong accuracy on the dominant `SOFTWARE` category — because 70%+ of tickets fall there. An AI system that doesn't beat the baseline on *hard cases* isn't worth its cost. Always define what "better" means before you build.
+
+**4. Cost is a product metric.**
+At 27k tickets/day, even a 1¢ per-call API cost becomes significant. The notebook includes token batching and caching strategies — because shipping an AI feature without a cost model is like shipping a product without a pricing strategy.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Tools |
+|-------|-------|
 | LLM | Anthropic Claude API |
-| Data | HuggingFace Datasets, Pandas, NumPy |
-| ML Baseline | Scikit-learn (Decision Tree) |
-| Vector Search | Cosine similarity (NumPy) |
-| Environment | Python 3.12, Jupyter Notebook |
+| Data | HuggingFace Datasets · Pandas · NumPy |
+| Retrieval | TF-IDF · BM25 · Cosine Similarity |
+| ML Baseline | Scikit-learn Decision Tree |
+| Environment | Python 3.12 · Google Colab |
 
-## Setup
+---
 
-### Prerequisites
+## ⚙️ Setup
 
 ```bash
-pip install anthropic datasets pandas numpy scikit-learn
+pip install anthropic datasets pandas numpy scikit-learn rank_bm25
 ```
 
-### API Key
-
-Set your Anthropic API key as an environment variable:
+Set your Anthropic API key:
 
 ```bash
 export ANTHROPIC_API_KEY=your_api_key_here
 ```
 
-### Run
+Open `ticket_routing_llm_improved.ipynb` in Jupyter or Colab and run all cells.
 
-Open `ticket_routing_llm_improved.ipynb` in Jupyter and run all cells sequentially.
+---
 
-## Results
+## 📁 Dataset
 
-The RAG-enhanced Claude routing outperforms both the LLM-only and decision tree baselines by providing historical ticket context, enabling more accurate category classification and smarter priority assignment.
+- **Source**: [`KameronB/synthetic-it-callcenter-tickets`](https://huggingface.co/datasets/KameronB/synthetic-it-callcenter-tickets)
+- **Size**: 27,600 synthetic IT support tickets
+- **Categories**: SOFTWARE · ACCOUNT · PIV CARD · EMAIL · SECURITY · PRINTER · NETWORK · HARDWARE
 
-## Why RAG Over Pure ML?
+---
 
-Traditional classifiers (e.g., decision trees) treat ticket routing as a fixed label prediction problem. RAG allows the model to:
-- Reason over similar resolved tickets
-- Handle edge cases and novel ticket types
-- Incorporate organizational context dynamically
+## 🔗 Author
 
-## Scalability Notes
-
-- Embeddings are stored once and reused across inference runs
-- Sub-agent parallelization recommended for datasets exceeding 100k tickets
-- Designed to integrate with ticketing platforms (Jira, ServiceNow, Zendesk)
-
-## Author
-
-**Akshatha Prabhu** — [GitHub](https://github.com/akshathaprabhu22)
+**Akshatha Prabhu** — PM learning to evaluate AI honestly · [GitHub](https://github.com/akshathaprabhu22)
