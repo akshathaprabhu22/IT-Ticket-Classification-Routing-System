@@ -90,8 +90,8 @@ Fine-tuning means retraining the AI every time your domain changes — expensive
 **2. Knowing when to hand off to a human is just as important as automating the decision.**
 The routing model returns a confidence score with every prediction. Tickets below 70% confidence get flagged for human review. This is how you build a system that scales *without* sacrificing accuracy — a core PM tradeoff between automation and oversight.
 
-**3. The baseline matters.**
-A decision tree on the same data achieves strong accuracy on the dominant `SOFTWARE` category — because 70%+ of tickets fall there. An AI system that doesn't beat the baseline on *hard cases* isn't worth its cost. Always define what "better" means before you build.
+**3. Impressive accuracy numbers can hide a lazy model.**
+If 70% of all tickets are `SOFTWARE`, a model that just predicts SOFTWARE every time looks 70% accurate — without understanding anything. The decision tree falls into exactly this trap. The real question is whether AI does better on the *hard, rare cases* — the `HARDWARE` and `NETWORK` tickets that are expensive to misroute. If it can't beat the baseline there, it isn't worth the added cost. Always define what "better" means before you build, or you'll end up approving an AI feature that a flowchart could have replaced.
 
 **4. Cost is a product metric.**
 At 27k tickets/day, even a 1¢ per-call API cost becomes significant. The notebook includes token batching and caching strategies — because shipping an AI feature without a cost model is like shipping a product without a pricing strategy.
