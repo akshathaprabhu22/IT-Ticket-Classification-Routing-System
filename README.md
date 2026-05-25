@@ -17,15 +17,16 @@ This project is my hands-on answer to that question. I built an end-to-end AI sy
 
 ## 📊 Results
 
-| Approach | Accuracy | Latency | Cost/ticket | Notes |
-|----------|----------|---------|-------------|-------|
-| **Decision Tree** | 80% | ~0ms | <$0.001 | Fully working — fast and reliable on common categories |
-| **Claude RAG** | *pending* | ~2–3s | ~$0.03 | Requires valid API key — expected to outperform on rare categories |
-| **Hybrid (ML → Claude)** | *pending* | ~0ms–3s | ~$0.015 | Recommended production path: ML handles easy cases, Claude handles ambiguous ones |
+*Measured on 20-ticket held-out validation sample · Model: claude-haiku-4-5*
 
-**What the 80% tells us:** The Decision Tree does well because 70%+ of tickets are `SOFTWARE` — it's learned to default to the dominant class. The real test is whether Claude RAG does better on the rare `HARDWARE`, `NETWORK`, and `PRINTER` tickets where misrouting is most costly. That comparison is pending a re-run with a valid API key.
+| Approach | Accuracy | Speed | Cost/ticket | Notes |
+|----------|----------|-------|-------------|-------|
+| **Claude RAG** | **70%** | 1.60s | ~$0.03 | 20/20 successful — best reasoning and audit trail |
+| **Pure LLM** | 65% | 1.20s | ~$0.02 | 20/20 successful — no retrieval index needed |
+| **Decision Tree** | 80% | ~0ms | <$0.001 | Fast but misleading — see below |
+| **Hybrid (ML → Claude)** | **80%** | ~0ms | ~$0.015 | ✅ Recommended for production |
 
-> ⚠️ Claude API results are pending — the original run was done without an API key set. Re-running Steps 4–5 with a valid `ANTHROPIC_API_KEY` will populate the full comparison.
+**Why the Decision Tree's 80% is misleading:** 70% of all tickets are `SOFTWARE`. The model learned to default to `SOFTWARE` when unsure — scoring **0% on `HARDWARE`** and only **25% recall on `ACCOUNT`**. Claude RAG scores lower overall (70%) but handles ambiguous, cross-category tickets far more honestly. On a larger, more balanced sample, RAG is expected to outperform ML on the rare categories where misrouting costs the most.
 
 ---
 
