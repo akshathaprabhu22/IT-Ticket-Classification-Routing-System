@@ -85,7 +85,7 @@ New IT Ticket (free text)
 ## 💡 Key PM Learnings
 
 **1. RAG vs. fine-tuning is a product decision, not just a technical one.**
-RAG is cheaper to update (add new tickets to the index), easier to audit (you can inspect what was retrieved), and doesn't require retraining when your ticket taxonomy changes. Confidence scores are how you determine when the model needs a human to step in. Without them, you're either automating everything and accepting silent errors, or routing everything to a human and defeating the purpose. A confidence threshold gives you a principled middle ground — automate the easy cases, escalate the ambiguous ones.
+Fine-tuning means retraining the AI every time your domain changes — expensive and slow. RAG skips that entirely: you just update the reference database and the model stays the same. For an IT helpdesk where new tools get added and ticket types evolve constantly, RAG is simply easier to maintain. It's the difference between retraining an employee from scratch versus handing them an updated manual.
 
 **2. Confidence scores are a feature, not an afterthought.**
 The routing model returns a confidence score with every prediction. Tickets below 70% confidence get flagged for human review. This is how you build a system that scales *without* sacrificing accuracy — a core PM tradeoff between automation and oversight.
