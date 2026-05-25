@@ -15,6 +15,20 @@ This project is my hands-on answer to that question. I built an end-to-end AI sy
 
 ---
 
+## 📊 Results
+
+| Approach | Accuracy | Latency | Cost/ticket | Notes |
+|----------|----------|---------|-------------|-------|
+| **Decision Tree** | 80% | ~0ms | <$0.001 | Fully working — fast and reliable on common categories |
+| **Claude RAG** | *pending* | ~2–3s | ~$0.03 | Requires valid API key — expected to outperform on rare categories |
+| **Hybrid (ML → Claude)** | *pending* | ~0ms–3s | ~$0.015 | Recommended production path: ML handles easy cases, Claude handles ambiguous ones |
+
+**What the 80% tells us:** The Decision Tree does well because 70%+ of tickets are `SOFTWARE` — it's learned to default to the dominant class. The real test is whether Claude RAG does better on the rare `HARDWARE`, `NETWORK`, and `PRINTER` tickets where misrouting is most costly. That comparison is pending a re-run with a valid API key.
+
+> ⚠️ Claude API results are pending — the original run was done without an API key set. Re-running Steps 4–5 with a valid `ANTHROPIC_API_KEY` will populate the full comparison.
+
+---
+
 ## 🤔 Does This Problem Actually Need AI?
 
 This was my first question before writing a single line. Here's the honest analysis:
