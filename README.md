@@ -87,7 +87,7 @@ New IT Ticket (free text)
 **1. RAG vs. fine-tuning is a product decision, not just a technical one.**
 Fine-tuning means retraining the AI every time your domain changes — expensive and slow. RAG skips that entirely: you just update the reference database and the model stays the same. For an IT helpdesk where new tools get added and ticket types evolve constantly, RAG is simply easier to maintain. It's the difference between retraining an employee from scratch versus handing them an updated manual.
 
-**2. Confidence scores are how you know when you need a human in the loop.**
+**2. Knowing when to hand off to a human is just as important as automating the decision.**
 The routing model returns a confidence score with every prediction. Tickets below 70% confidence get flagged for human review. This is how you build a system that scales *without* sacrificing accuracy — a core PM tradeoff between automation and oversight.
 
 **3. The baseline matters.**
